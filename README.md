@@ -4,7 +4,10 @@
 
 - 상태 페이지 — https://software-lucas.github.io/nostra-data/
 - `snapshot.json` — 로또 400회차 · 연금 200회차 + 알고리즘별 집계
-- `stores.json` — 최신 회차 1·2등 배출점 (이름·주소·좌표·자동수동)
+- `stores.json` — 로또·연금 최근 5회차 1·2등 배출점 (이름·주소·좌표·자동수동)
+
+배출점은 `game`(`lotto` | `pension`) 과 `round` 로 갈린다. 회차 숫자만으로는
+로또 1240회와 연금 331회를 구분할 수 없어서 `game` 이 필요하다.
 
 배출점 좌표는 동행복권 응답(`shpLat`/`shpLot`)에 이미 들어 있어 지오코딩이 필요 없다.
 

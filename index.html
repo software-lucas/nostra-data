@@ -115,7 +115,7 @@
       </tr>
       <tr>
         <td><a href="stores.json">stores.json</a></td>
-        <td class="d">최신 회차 1·2등 배출점 — 이름·주소·좌표·자동수동</td>
+        <td class="d">로또·연금 최근 5회차 1·2등 배출점 — 이름·주소·좌표·자동수동</td>
       </tr>
     </tbody>
   </table>
@@ -174,13 +174,18 @@
         .then((r) => (r.ok ? r.json() : []))
         .then((list) => {
           if (!Array.isArray(list) || list.length === 0) return;
-          const r1 = list.filter((s) => s.rank === 1).length;
-          const coords = list.filter((s) => s.lat != null).length;
-          document.getElementById('tiles').insertAdjacentHTML(
-            'beforeend',
-            tile('배출점', `${fmt.format(list.length)}곳`,
-                 `1등 ${r1} · 좌표 ${coords}`),
-          );
+          const label = { lotto: '로또 배출점', pension: '연금 배출점' };
+          const html = ['lotto', 'pension']
+            .map((g) => {
+              const rows = list.filter((s) => s.game === g);
+              if (rows.length === 0) return '';
+              const rounds = [...new Set(rows.map((s) => s.round))].sort((a, b) => b - a);
+              const r1 = rows.filter((s) => s.rank === 1).length;
+              return tile(label[g], `${fmt.format(rows.length)}곳`,
+                          `${rounds.length}회차 (${rounds[rounds.length - 1]}~${rounds[0]}) · 1등 ${r1}`);
+            })
+            .join('');
+          document.getElementById('tiles').insertAdjacentHTML('beforeend', html);
         })
         .catch(() => {});
 
