@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nostra 회차 데이터</title>
+<meta name="description" content="로또 6/45 · 연금복권 720+ 회차 데이터의 정적 JSON 엔드포인트와 갱신 상태.">
+<style>
+  :root {
+    --ink:#0B2126; --slate:#143238; --brass:#C8912F; --bone:#E8E2D4;
+    --sage:#6E8F72; --rust:#A5442A;
+    --edge:#20383D; --dim:#9DAAAB; --faint:#6C7B7D;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin:0; background:var(--ink); color:var(--bone);
+    font-family:var(--sans); font-size:15px; line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:760px; margin:0 auto; padding:56px 24px 80px; }
+  .eyebrow {
+    font-family:var(--mono); font-size:11px; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--faint); margin:0 0 12px;
+  }
+  h1 { font-size:30px; font-weight:700; letter-spacing:-.02em; margin:0 0 16px; }
+  .lede { color:var(--dim); max-width:60ch; margin:0; }
+  .lede strong { color:var(--bone); font-weight:600; }
+  hr { border:0; height:1px; background:var(--edge); margin:36px 0; }
+  h2 {
+    font-family:var(--mono); font-size:11px; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--faint); margin:0 0 18px;
+  }
+
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px; }
+  .tile {
+    background:var(--slate); border:1px solid var(--edge); border-radius:6px; padding:16px 18px;
+  }
+  .tile .k {
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--faint); display:block; margin-bottom:7px;
+  }
+  .tile .v {
+    font-family:var(--mono); font-size:23px; font-variant-numeric:tabular-nums;
+    color:var(--bone); line-height:1.2;
+  }
+  .tile .s { font-family:var(--mono); font-size:12px; color:var(--dim); margin-top:5px; }
+
+  .pill {
+    display:inline-flex; align-items:center; gap:7px; font-family:var(--mono);
+    font-size:12px; padding:4px 11px 4px 9px; border-radius:3px;
+    border:1px solid currentColor;
+  }
+  .pill::before { content:""; width:7px; height:7px; border-radius:50%; background:currentColor; }
+  .fresh { color:var(--sage); } .stale { color:var(--rust); } .unknown { color:var(--faint); }
+
+  table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  th,td { text-align:left; padding:10px 0; border-bottom:1px solid var(--edge); }
+  th {
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--faint); font-weight:400;
+  }
+  tr:last-child td { border-bottom:0; }
+  td a { font-family:var(--mono); font-size:13px; color:var(--brass); }
+  td.d { color:var(--dim); }
+  code {
+    font-family:var(--mono); font-size:12.5px; background:var(--slate);
+    padding:1.5px 5px; border-radius:3px; color:var(--bone);
+  }
+  .note {
+    margin-top:24px; padding-left:15px; border-left:2px solid var(--edge);
+    color:var(--dim); font-size:13.5px; max-width:62ch;
+  }
+  .foot {
+    margin-top:44px; padding-top:20px; border-top:1px solid var(--edge);
+    color:var(--faint); font-size:12.5px;
+  }
+  a { color:var(--brass); text-underline-offset:2px; }
+  a:focus-visible { outline:2px solid var(--brass); outline-offset:3px; }
+  .flow { display:grid; gap:0; font-family:var(--mono); font-size:12.5px; color:var(--dim); }
+  .flow div { padding:7px 0; border-bottom:1px solid var(--edge); }
+  .flow div:last-child { border-bottom:0; }
+  .flow b { color:var(--bone); font-weight:500; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">software-lucas / nostra-data</p>
+  <h1>nostra 회차 데이터</h1>
+  <p class="lede">
+    로또 6/45 와 연금복권 720+ 의 회차 결과를 정적 JSON 으로 둔 곳이다.
+    <strong>nostra 앱은 동행복권을 직접 부르지 않고</strong> 이 파일만 읽는다 —
+    비공식 API 라 단말이 직접 때리면 IP 차단과 스펙 변경에 그대로 노출되기 때문이다.
+    스펙이 바뀌어도 수집 쪽만 고치면 되고 앱 재심사가 필요 없다.
+  </p>
+
+  <hr>
+
+  <h2>상태</h2>
+  <div class="grid" id="tiles">
+    <div class="tile"><span class="k">불러오는 중</span><span class="v">…</span></div>
+  </div>
+  <p style="margin:16px 0 0"><span class="pill unknown" id="freshness">확인 중</span></p>
+
+  <hr>
+
+  <h2>엔드포인트</h2>
+  <table>
+    <thead><tr><th>파일</th><th>내용</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><a href="snapshot.json">snapshot.json</a></td>
+        <td class="d">로또 400회차 · 연금 200회차 + 알고리즘별 집계</td>
+      </tr>
+      <tr>
+        <td><a href="stores.json">stores.json</a></td>
+        <td class="d">1·2등 배출점 — 아직 수집하지 않아 빈 배열이다</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="note">
+    조건부 GET 을 지원한다. <code>ETag</code> 를 받아 <code>If-None-Match</code> 로 다시 요청하면
+    변경이 없을 때 <code>304</code> 가 떨어지므로, 앱은 바뀐 게 없으면 본문을 내려받지 않는다.
+  </div>
+
+  <hr>
+
+  <h2>수집 경로</h2>
+  <div class="flow">
+    <div><b>동행복권</b> (비공식 API) — 해외 IP 를 차단한다</div>
+    <div>↓ &nbsp; <b>로컬 launchd</b> · 주 2회 (로또 토 22:30 · 연금 목 21:30 KST)</div>
+    <div>↓ &nbsp; <b>git push</b> → 이 레포</div>
+    <div>↓ &nbsp; <b>GitHub Pages</b> — 정적 JSON</div>
+    <div>↓ &nbsp; <b>앱</b> (읽기만)</div>
+  </div>
+  <div class="note">
+    GitHub Actions 에서 돌리다가 옮겼다. 러너 IP 에서는 동행복권 접속이
+    TCP 연결 단계에서 타임아웃한다 — 응답을 거부하는 게 아니라 패킷이 버려진다.
+    같은 코드가 국내 IP 에서는 11초에 완료된다.
+  </div>
+
+  <div class="foot">
+    로또·연금 번호는 참고용이며 당첨을 보장하지 않는다. 추첨은 매 회 독립이고,
+    이 레포의 검정 결과는 알고리즘 49종 전부 우연과 구분되지 않는다는 것이다.
+    동행복권의 상표·서비스와 무관하다.
+  </div>
+</div>
+
+<script>
+  const fmt = new Intl.NumberFormat('ko-KR');
+
+  const tile = (k, v, s) =>
+    `<div class="tile"><span class="k">${k}</span><span class="v">${v}</span>` +
+    (s ? `<div class="s">${s}</div>` : '') + `</div>`;
+
+  const ymd = (d) =>
+    d && d.length === 8 ? `${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}` : (d || '—');
+
+  fetch('snapshot.json', { cache: 'no-cache' })
+    .then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then((d) => {
+      const lotto = (d.lotto || [])[0] || {};
+      const pension = (d.pension || [])[0] || {};
+      document.getElementById('tiles').innerHTML = [
+        tile('로또 최신', `${fmt.format(lotto.round || 0)}회`, ymd(lotto.date)),
+        tile('연금 최신', `${fmt.format(pension.round || 0)}회`, ymd(pension.date)),
+        tile('보관 회차', `${(d.lotto || []).length} / ${(d.pension || []).length}`, '로또 / 연금'),
+        tile('생성 시각', (d.generatedAt || '—').replace('T', ' ').replace('Z', ' UTC'), ''),
+      ].join('');
+
+      // 신선도 — 로또는 토요일 추첨이라 8일 넘게 안 바뀌면 수집이 멈춘 것이다
+      const el = document.getElementById('freshness');
+      const gen = d.generatedAt ? new Date(d.generatedAt) : null;
+      if (!gen || isNaN(gen)) { el.textContent = '생성 시각을 읽지 못함'; return; }
+      const days = (Date.now() - gen.getTime()) / 86400000;
+      el.className = 'pill ' + (days <= 8 ? 'fresh' : 'stale');
+      el.textContent = days <= 8
+        ? `정상 — ${days < 1 ? '오늘' : Math.floor(days) + '일 전'} 갱신`
+        : `갱신 지연 — ${Math.floor(days)}일 전`;
+    })
+    .catch((e) => {
+      document.getElementById('tiles').innerHTML =
+        tile('불러오지 못함', '—', String(e.message || e));
+      const el = document.getElementById('freshness');
+      el.className = 'pill stale';
+      el.textContent = 'snapshot.json 을 읽지 못함';
+    });
+</script>
+</body>
+</html>
