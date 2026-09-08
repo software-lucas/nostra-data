@@ -115,7 +115,7 @@
       </tr>
       <tr>
         <td><a href="stores.json">stores.json</a></td>
-        <td class="d">1·2등 배출점 — 아직 수집하지 않아 빈 배열이다</td>
+        <td class="d">최신 회차 1·2등 배출점 — 이름·주소·좌표·자동수동</td>
       </tr>
     </tbody>
   </table>
@@ -168,6 +168,21 @@
         tile('보관 회차', `${(d.lotto || []).length} / ${(d.pension || []).length}`, '로또 / 연금'),
         tile('생성 시각', (d.generatedAt || '—').replace('T', ' ').replace('Z', ' UTC'), ''),
       ].join('');
+
+      // 배출점은 별 파일이라 따로 읽어 타일 하나를 덧붙인다.
+      fetch('stores.json', { cache: 'no-cache' })
+        .then((r) => (r.ok ? r.json() : []))
+        .then((list) => {
+          if (!Array.isArray(list) || list.length === 0) return;
+          const r1 = list.filter((s) => s.rank === 1).length;
+          const coords = list.filter((s) => s.lat != null).length;
+          document.getElementById('tiles').insertAdjacentHTML(
+            'beforeend',
+            tile('배출점', `${fmt.format(list.length)}곳`,
+                 `1등 ${r1} · 좌표 ${coords}`),
+          );
+        })
+        .catch(() => {});
 
       // 신선도 — 로또는 토요일 추첨이라 8일 넘게 안 바뀌면 수집이 멈춘 것이다
       const el = document.getElementById('freshness');
